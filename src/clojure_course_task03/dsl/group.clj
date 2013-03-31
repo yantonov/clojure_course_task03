@@ -88,4 +88,7 @@
                                           table-privileges-list)
               (intern (symbol (ns-name *ns*))
                       fn-name
-                      (fn [] table-privileges-list)))))))))
+                      (fn [] (format "SELECT %s FROM %s "
+                                     (clojure.string/join ","
+                                                          (map str table-privileges-list))
+                                     table-name))))))))))
