@@ -1,5 +1,8 @@
 (ns clojure-course-task03.core
-  (:require [clojure.set]))
+  (:require [clojure.set])
+  (:require [clojure-course-task03.dsl.group :as group])
+  (:require [clojure-course-task03.dsl.user :as user])
+  (:require [clojure-course-task03.dsl.with-user :as with-user]))
 
 (defn join* [table-name conds]
   (let [op (first conds)
@@ -77,7 +80,7 @@
         ;; Accepts vector [[:where (where* ...)] [:join (join* ...)] ...],
         ;; returns map {:where (where* ...), :join (join* ...), ...}
         env# (apply hash-map (apply concat env*))]
-    
+
     `(select* ~(str table-name)  ~env#)))
 
 
@@ -157,12 +160,12 @@
   (select-director-proposal) ;; select * proposal;
   (select-director-clients)  ;; select * from clients;
   (select-director-agents)  ;; select * from agents;
-  
+
 
   ;; Определяем пользователей и их группы
 
   ;; Макрос user должен сохранять разрешенные пользователю таблицы и поля в атоме *user-tables-vars*.
-  
+
   (user Ivanov
         (belongs-to Agent))
 
@@ -200,7 +203,7 @@
             (fields :done)
             (where {:agent "Ivanov"})
             (order :done :ASC)))
-  
+
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -218,6 +221,7 @@
   ;; 3) Создает следующие функции
   ;;    (select-agent-proposal) ;; select person, phone, address, price from proposal;
   ;;    (select-agent-agents)  ;; select clients_id, proposal_id, agent from agents;
+  `(group/group ~name ~@body)
   )
 
 (defmacro user [name & body]
@@ -227,16 +231,18 @@
   ;; Создает переменные Ivanov-proposal-fields-var = [:person, :phone, :address, :price]
   ;; и Ivanov-agents-fields-var = [:clients_id, :proposal_id, :agent]
   ;; Сохраняет эти же переменные в атоме *user-tables-vars*.
+  `(user/user ~name ~@body)
   )
 
 (defmacro with-user [name & body]
   ;; Пример
   ;; (with-user Ivanov
   ;;   . . .)
-  ;; 1) Находит все переменные, начинающиеся со слова Ivanov, в *user-tables-vars*
+  ;; 1) Находит все переменные, начинающиеся со слова Ivanov, в *user-tables-var*s
   ;;    (Ivanov-proposal-fields-var и Ivanov-agents-fields-var)
   ;; 2) Создает локальные привязки без префикса Ivanov-:
   ;;    proposal-fields-var и agents-fields-var.
   ;;    Таким образом, функция select, вызванная внутри with-user, получает
   ;;    доступ ко всем необходимым переменным вида <table-name>-fields-var.
+  `(with-user/with-user ~name ~@body)
   )

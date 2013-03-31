@@ -36,7 +36,8 @@
 (defn group-privileges
   "Returns group privileges."
   [group-name]
-  (@group-privileges-registry group-name))
+  (let [reg @group-privileges-registry]
+    (reg group-name)))
 
 (defn register-table-privileges!
   "Adds table for given group to group privileges regitry."
@@ -54,8 +55,12 @@
   "Returns table privileges for given group and table."
   [group-name table-name]
   (let [privileges (group-privileges group-name)]
-    (get privileges table-name))
-  )
+    (get privileges table-name)))
+
+(defn table-privileges-as-keywords
+  "Returns table privileges as vector of keywords."
+  [privileges]
+  (vec (map keyword privileges)))
 
 (defmacro group [name & body]
   ;; Sample
@@ -68,21 +73,19 @@
   ;;    (select-agent-proposal) ;; select person, phone, address, price from proposal;
   ;;    (select-agent-agents)  ;; select clients_id, proposal_id, agent from agents;
   (let [group-name name
-        group-name-sym (symbol group-name)
-        table-seq (partition 3 body)
-        defn-seq (for [table table-seq]
-                   (let [[table-name _ table-privileges] table
-                         fn-name (allowed-column-fn-name group-name
-                                                         table-name)
-                         table-name-sym (symbol table-name)]
-                     `(do
-                        (register-table-privileges! '~group-name-sym
-                                                    '~table-name-sym
-                                                    '~table-privileges)
-                        (defn ~fn-name [] (table-privileges '~group-name-sym
-                                                            '~table-name-sym)))))]
-    `(do
-       (register-group! '~group-name-sym)
-       ~@defn-seq
-       nil)
-    ))
+        group-name-sym (symbol group-name)]
+    (register-group! group-name-sym)
+    (let [table-seq (partition 3 body)]
+      (doseq [table table-seq]
+        (let [[_ arrow __] table]
+          (when (= arrow '->)
+            (let [[table-name _ table-privileges-list] table
+                  fn-name (allowed-column-fn-name group-name
+                                                  table-name)
+                  table-name-sym (symbol table-name)]
+              (register-table-privileges! group-name-sym
+                                          table-name-sym
+                                          table-privileges-list)
+              (intern (symbol (ns-name *ns*))
+                      fn-name
+                      (fn [] table-privileges-list)))))))))
