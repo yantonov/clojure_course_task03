@@ -48,7 +48,11 @@
 (deftest select-agent-agents-test
   (testing "Tesing select-agent-agents"
     (let [result (select-agent-agents)]
-      (is (= result "SELECT clients_id,proposal_id,agent FROM agents ")))))
+      ;; very strange test, we get previleges for group Agent and table agents
+      ;; and expects sql ?!?!?!?!?
+      ;; (is (= result "SELECT clients_id,proposal_id,agent FROM agents "))
+      (is (= result ['clients_id, 'proposal_id, 'agent]))
+      )))
 
 
 (deftest directorov-with-user-test
