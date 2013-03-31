@@ -1,4 +1,5 @@
-(ns clojure-course-task03.dsl.group)
+(ns clojure-course-task03.dsl.group
+  (:require [clojure.string :as s]))
 
 (defn allowed-column-fn-name
   "defines function name to access allowed columns for given group/table"
@@ -6,9 +7,9 @@
    ^clojure.lang.Symbol table]
   (symbol (str "select"
                "-"
-               (.toLowerCase (str group))
+               (s/lower-case (str group))
                "-"
-               (.toLowerCase (str table)))))
+               (s/lower-case (str table)))))
 
 (def group-privileges-registry (ref {}))
 
@@ -62,6 +63,13 @@
   [privileges]
   (vec (map keyword privileges)))
 
+(defn get-sql-statement
+  [table-name columns]
+  (format "SELECT %s FROM %s "
+          (clojure.string/join ","
+                               (map str columns))
+          table-name))
+
 (defmacro group [name & body]
   ;; Sample
   ;; (group Agent
@@ -80,15 +88,11 @@
         (let [[_ arrow __] table]
           (when (= arrow '->)
             (let [[table-name _ table-privileges-list] table
-                  fn-name (allowed-column-fn-name group-name
-                                                  table-name)
                   table-name-sym (symbol table-name)]
               (register-table-privileges! group-name-sym
                                           table-name-sym
                                           table-privileges-list)
               (intern (symbol (ns-name *ns*))
-                      fn-name
-                      (fn [] (format "SELECT %s FROM %s "
-                                     (clojure.string/join ","
-                                                          (map str table-privileges-list))
-                                     table-name))))))))))
+                      (allowed-column-fn-name group-name
+                                              table-name)
+                      (fn [] (get-sql-statement table-name table-privileges-list))))))))))

@@ -52,11 +52,8 @@
             table-names (keys privileges)]
         (doseq [table-name table-names]
           (let [var-name-to-def
-                (var-name-which-holds-table-privileges user-name table-name)
-
-                table-privileges
-                (g/table-privileges-as-keywords (g/table-privileges group-name table-name))]
+                (var-name-which-holds-table-privileges user-name table-name)]
             (intern (symbol (ns-name *ns*))
                     var-name-to-def
-                    table-privileges)
+                    (g/table-privileges-as-keywords (g/table-privileges group-name table-name)))
             (add-var-to-user-tables-vars var-name-to-def)))))))
