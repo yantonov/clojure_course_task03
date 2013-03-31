@@ -38,7 +38,7 @@
      (and (= (first flds) :all) (= (first allowed) :all)) "*"
      (and (= (first flds) :all) (not= (first allowed) :all)) (-fields** allowed)
      (= :all (first allowed)) (-fields** flds)
-     :else (-fields** v))))
+     :else (-fields** (filter v flds)))))
 
 (defn select* [table-name {:keys [fields where join order limit offset]}]
   (-> (str "SELECT " fields " FROM " table-name " ")
@@ -164,8 +164,6 @@
 
   ;; Определяем пользователей и их группы
 
-  ;; Макрос user должен сохранять разрешенные пользователю таблицы и поля в атоме *user-tables-vars*.
-
   (user Ivanov
         (belongs-to Agent))
 
@@ -230,7 +228,6 @@
   ;;     (belongs-to Agent))
   ;; Создает переменные Ivanov-proposal-fields-var = [:person, :phone, :address, :price]
   ;; и Ivanov-agents-fields-var = [:clients_id, :proposal_id, :agent]
-  ;; Сохраняет эти же переменные в атоме *user-tables-vars*.
   `(user/user ~name ~@body)
   )
 
