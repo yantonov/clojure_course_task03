@@ -59,12 +59,20 @@
   [privileges]
   (vec (map keyword privileges)))
 
+(defn select-all?
+  [columns]
+  (and (= 1 (count columns))
+       (= 'all (first columns))
+       ))
+
 (defn get-sql-statement
   [table-name columns]
-  (format "SELECT %s FROM %s "
-          (clojure.string/join ","
-                               (map str columns))
-          table-name))
+  (if (select-all? columns)
+    (format "SELECT * FROM %s " table-name)
+    (format "SELECT %s FROM %s "
+            (clojure.string/join ","
+                                 (map str columns))
+            table-name)))
 
 (defmacro group [name & body]
   ;; Sample
