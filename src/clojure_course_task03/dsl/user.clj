@@ -30,9 +30,7 @@
   [items]
   (for [item items
         :when (only-belongs-to-command item)]
-    (let [[cmd group] item]
-      (vector (symbol cmd)
-              (symbol group)))))
+    (apply vector (map symbol item))))
 
 (defmacro user [name & body]
   ;; Sample
@@ -46,13 +44,14 @@
   (let [user-name name
         security-items (get-security-items body)]
     (doseq [security-data-item security-items]
-      (let [[_ group-name] security-data-item
-            privileges (g/group-privileges group-name)
-            table-names (keys privileges)]
-        (doseq [table-name table-names]
-          (let [var-name-to-def
-                (var-name-which-holds-table-privileges user-name table-name)]
-            (intern (symbol (ns-name *ns*))
-                    var-name-to-def
-                    (g/table-privileges-as-keywords (g/table-privileges group-name table-name)))
-            (add-var-to-user-tables-vars var-name-to-def)))))))
+      (let [[_ & group-names] security-data-item]
+        (doseq [group-name group-names]
+          (let [privileges (g/group-privileges group-name)
+                table-names (keys privileges)]
+            (doseq [table-name table-names]
+              (let [var-name-to-def
+                    (var-name-which-holds-table-privileges user-name table-name)]
+                (intern (symbol (ns-name *ns*))
+                        var-name-to-def
+                        (g/table-privileges-as-keywords (g/table-privileges group-name table-name)))
+                (add-var-to-user-tables-vars var-name-to-def)))))))))

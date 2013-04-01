@@ -47,3 +47,22 @@
     (test/is (contains? vars 'Ivanov-proposal-fields-var))
     )
   )
+
+(test/deftest attach-to-multiple-groups
+  (test/testing "user macro can be used to attach user to multiple groups"
+    (let [ns-sym 'clojure-course-task03.dsl.user-test]
+      (g/group A
+               a_table -> [a_column])
+      (g/group B
+               b_table -> [b_column])
+      (g/group C
+               c_table -> [c_column])
+      (target/user Ivanov
+                   (belongs-to A B C))
+      (test/is (false? (nil? (ns-resolve ns-sym
+                                         'Ivanov-a_table-fields-var))))
+      (test/is (false? (nil? (ns-resolve ns-sym
+                                         'Ivanov-b_table-fields-var))))
+      (test/is (false? (nil? (ns-resolve ns-sym
+                                         'Ivanov-c_table-fields-var))))
+      )))
