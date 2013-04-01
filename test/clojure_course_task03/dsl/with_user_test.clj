@@ -1,7 +1,8 @@
 (ns clojure-course-task03.dsl.with-user-test
-  (:require [clojure-course-task03.dsl.group :as g])
-  (:require [clojure-course-task03.dsl.user :as u])
-  (:require [clojure-course-task03.dsl.with-user :as target])
+  (:require [clojure-course-task03.dsl
+             [group :as g]
+             [user :as u]
+             [with-user :as target]])
   (:require [clojure.test :as test]))
 
 (def test-atom (atom []))

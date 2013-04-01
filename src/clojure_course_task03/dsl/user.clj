@@ -32,6 +32,10 @@
         :when (only-belongs-to-command item)]
     (apply vector (map symbol item))))
 
+(defn is-all? [columns]
+  (and (= 1 (count columns))
+       (= :all (first columns))))
+
 (defmacro user [name & body]
   ;; Sample
   ;; (user Ivanov
@@ -42,7 +46,8 @@
   ;;
   ;; Saves this variables to *user-tables-vars* atom.
   (let [user-name name
-        security-items (get-security-items body)]
+        security-items (get-security-items body)
+        defined-var-values (atom {})]
     (doseq [security-data-item security-items]
       (let [[_ & group-names] security-data-item]
         (doseq [group-name group-names]
@@ -51,7 +56,19 @@
             (doseq [table-name table-names]
               (let [var-name-to-def
                     (var-name-which-holds-table-privileges user-name table-name)]
-                (intern (symbol (ns-name *ns*))
-                        var-name-to-def
-                        (g/table-privileges-as-keywords (g/table-privileges group-name table-name)))
+                (let [ns-sym (symbol (ns-name *ns*))
+                      new-val (g/table-privileges-as-keywords
+                               (g/table-privileges group-name table-name))
+                      var-binding (ns-resolve ns-sym var-name-to-def)]
+                  (swap! defined-var-values
+                         (fn [a]
+                           (assoc a var-name-to-def
+                                  (if (or (is-all? new-val)
+                                          (is-all? (a var-name-to-def [])))
+                                    [:all]
+                                    (vec (concat (a var-name-to-def []) new-val))))))
+                  (intern ns-sym
+                          var-name-to-def
+                          (@defined-var-values var-name-to-def))
+                  )
                 (add-var-to-user-tables-vars var-name-to-def)))))))))
