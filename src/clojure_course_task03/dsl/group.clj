@@ -17,22 +17,18 @@
   "Registers given group in group privileges registry."
   [group-name]
   (dosync
-   (alter group-privileges-registry
-          (fn [reg] (assoc reg group-name {})))))
+   (alter group-privileges-registry assoc group-name {})))
 
 (defn unregister-group!
   "Unregisters given group"
   [group-name]
   (dosync
-   (alter group-privileges-registry
-          (fn [reg] (dissoc reg group-name))))
-  )
+   (alter group-privileges-registry dissoc group-name)))
 
 (defn set-group-privileges!
   [group-name privileges]
   (dosync
-   (alter group-privileges-registry
-          (fn [reg] (assoc reg group-name privileges)))))
+   (alter group-privileges-registry assoc group-name privileges)))
 
 (defn group-privileges
   "Returns group privileges."
