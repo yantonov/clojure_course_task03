@@ -51,9 +51,11 @@
         ns-sym (symbol (ns-name *ns*))]
     (doseq [group-name (mapcat rest security-items)]
       (doseq [table-name (keys (g/group-privileges group-name))]
-        (let [var-name-to-def (table-privileges-var-name user-name table-name)
+        (let [var-name-to-def (table-privileges-var-name user-name
+                                                         table-name)
               new-val (g/table-privileges-as-keywords
-                       (g/table-privileges group-name table-name))]
+                       (g/table-privileges group-name
+                                           table-name))]
           (swap! defined-var-values
                  (fn [a]
                    (let [current (a var-name-to-def [])]
