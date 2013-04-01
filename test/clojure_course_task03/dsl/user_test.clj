@@ -7,7 +7,7 @@
 (test/deftest var-name-which-holds-table-privileges-test
   (test/testing "Name convention for variable names"
     (test/is (= 'Ivanov-proposal-fields-var
-                (target/var-name-which-holds-table-privileges 'Ivanov 'proposal)))))
+                (target/table-privileges-var-name 'Ivanov 'proposal)))))
 
 (test/deftest user-macro-defines-variables-contained-table-privileges
   (test/testing "User macro defines variables contained table privileges."

@@ -13,7 +13,7 @@
 (defn get-user-tables-vars []
   @*user-tables-vars*)
 
-(defn var-name-which-holds-table-privileges
+(defn table-privileges-var-name
   [^clojure.lang.Symbol user-name
    ^clojure.lang.Symbol table-name]
   (symbol (str user-name
@@ -47,28 +47,22 @@
   ;; Saves this variables to *user-tables-vars* atom.
   (let [user-name name
         security-items (get-security-items body)
-        defined-var-values (atom {})]
-    (doseq [security-data-item security-items]
-      (let [[_ & group-names] security-data-item]
-        (doseq [group-name group-names]
-          (let [privileges (g/group-privileges group-name)
-                table-names (keys privileges)]
-            (doseq [table-name table-names]
-              (let [var-name-to-def
-                    (var-name-which-holds-table-privileges user-name table-name)]
-                (let [ns-sym (symbol (ns-name *ns*))
-                      new-val (g/table-privileges-as-keywords
-                               (g/table-privileges group-name table-name))
-                      var-binding (ns-resolve ns-sym var-name-to-def)]
-                  (swap! defined-var-values
-                         (fn [a]
-                           (assoc a var-name-to-def
-                                  (if (or (is-all? new-val)
-                                          (is-all? (a var-name-to-def [])))
-                                    [:all]
-                                    (vec (concat (a var-name-to-def []) new-val))))))
-                  (intern ns-sym
-                          var-name-to-def
-                          (@defined-var-values var-name-to-def))
-                  )
-                (add-var-to-user-tables-vars var-name-to-def)))))))))
+        defined-var-values (atom {})
+        ns-sym (symbol (ns-name *ns*))]
+    (doseq [group-name (mapcat rest security-items)]
+      (doseq [table-name (keys (g/group-privileges group-name))]
+        (let [var-name-to-def (table-privileges-var-name user-name table-name)
+              new-val (g/table-privileges-as-keywords
+                       (g/table-privileges group-name table-name))]
+          (swap! defined-var-values
+                 (fn [a]
+                   (let [current (a var-name-to-def [])]
+                     (assoc a var-name-to-def
+                            (if (or (is-all? new-val)
+                                    (is-all? current))
+                              [:all]
+                              (vec (concat current new-val)))))))
+          (intern ns-sym
+                  var-name-to-def
+                  (@defined-var-values var-name-to-def))
+          (add-var-to-user-tables-vars var-name-to-def))))))
