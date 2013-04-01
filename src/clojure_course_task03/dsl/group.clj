@@ -74,6 +74,10 @@
                                  (map str columns))
             table-name)))
 
+(defn arrow-separator?
+  [table-definition]
+  (= (second table-definition) '->))
+
 (defmacro group [name & body]
   ;; Sample
   ;; (group Agent
@@ -87,16 +91,15 @@
   (let [group-name name
         group-name-sym (symbol group-name)]
     (register-group! group-name-sym)
-    (let [table-seq (partition 3 body)]
-      (doseq [table table-seq]
-        (let [[_ arrow __] table]
-          (when (= arrow '->)
-            (let [[table-name _ table-privileges-list] table
-                  table-name-sym (symbol table-name)]
-              (register-table-privileges! group-name-sym
-                                          table-name-sym
-                                          table-privileges-list)
-              (intern (symbol (ns-name *ns*))
-                      (allowed-column-fn-name group-name
-                                              table-name)
-                      (fn [] (get-sql-statement table-name table-privileges-list))))))))))
+    (doseq [table (partition 3 body)]
+      (when (arrow-separator? table)
+        (let [[table-name _ allowed-columns] table
+              table-name-sym (symbol table-name)]
+          (register-table-privileges! group-name-sym
+                                      table-name-sym
+                                      allowed-columns)
+          (intern (symbol (ns-name *ns*))
+                  (allowed-column-fn-name group-name
+                                          table-name)
+                  (fn [] (get-sql-statement table-name
+                                            allowed-columns))))))))
