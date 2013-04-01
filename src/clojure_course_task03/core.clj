@@ -1,8 +1,9 @@
 (ns clojure-course-task03.core
   (:require [clojure.set])
-  (:require [clojure-course-task03.dsl.group :as group])
-  (:require [clojure-course-task03.dsl.user :as user])
-  (:require [clojure-course-task03.dsl.with-user :as with-user]))
+  (:require [clojure-course-task03.dsl
+             [group :as group]
+             [user :as user]
+             [with-user :as with-user]]))
 
 (defn join* [table-name conds]
   (let [op (first conds)

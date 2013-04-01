@@ -4,8 +4,7 @@
 (def ^:dynamic *user-tables-vars* (atom #{}))
 
 (defn add-var-to-user-tables-vars [var-name]
-  (swap! *user-tables-vars*
-         (fn [reg] (conj reg var-name))))
+  (swap! *user-tables-vars* conj var-name))
 
 (defn remove-var-to-user-tables-vars [var-name]
   (swap! *user-tables-vars*
