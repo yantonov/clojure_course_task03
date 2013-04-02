@@ -15,8 +15,7 @@
                                            'select-agent-agents)))))
       (test/testing "select-agent-proposal is defined inside current namespace."
         (test/is (false? (nil? (ns-resolve ns-sym
-                                           'select-agent-proposal))))))
-    ))
+                                           'select-agent-proposal))))))))
 
 (test/deftest register-group-test
   (test/is (= {}
@@ -74,7 +73,7 @@
     (let [ns-sym (symbol (ns-name *ns*))]
       (eval '(clojure-course-task03.dsl.group/group
               Agent
-              proposal -> [all]))
+              proposal -> [:all]))
       (let [f (ns-resolve ns-sym
                           'select-agent-proposal)]
         (test/testing "select-agent-agents returns table privileges."

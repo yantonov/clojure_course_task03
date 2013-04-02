@@ -62,7 +62,7 @@
 (defn select-all?
   [columns]
   (and (= 1 (count columns))
-       (= 'all (first columns))
+       (= ':all (first columns))
        ))
 
 (defn get-sql-statement
