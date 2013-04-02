@@ -1,7 +1,7 @@
 (ns clojure-course-task03.dsl.group
   (:require [clojure.string :as s]))
 
-(defn allowed-column-fn-name
+(defn select-fn-name
   "defines function name to access allowed columns for given group/table"
   [^clojure.lang.Symbol group
    ^clojure.lang.Symbol table]
@@ -11,61 +11,12 @@
                "-"
                (s/lower-case (str table)))))
 
-(def group-privileges-registry (ref {}))
-
-(defn register-group!
-  "Registers given group in group privileges registry."
-  [group-name]
-  (dosync
-   (alter group-privileges-registry assoc group-name {})))
-
-(defn unregister-group!
-  "Unregisters given group"
-  [group-name]
-  (dosync
-   (alter group-privileges-registry dissoc group-name)))
-
-(defn set-group-privileges!
-  [group-name privileges]
-  (dosync
-   (alter group-privileges-registry assoc group-name privileges)))
-
-(defn group-privileges
-  "Returns group privileges."
-  [group-name]
-  (let [reg @group-privileges-registry]
-    (reg group-name)))
-
-(defn register-table-privileges!
-  "Adds table for given group to group privileges regitry."
-  [group-name table-name table-privileges]
-  (dosync
-   (alter group-privileges-registry
-          (fn [reg]
-            (let [privileges (group-privileges group-name)]
-              (set-group-privileges! group-name
-                                     (assoc privileges
-                                       table-name
-                                       table-privileges)))))))
-
-(defn table-privileges
-  "Returns table privileges for given group and table."
-  [group-name table-name]
-  (let [privileges (group-privileges group-name)]
-    (get privileges table-name)))
-
-(defn table-privileges-as-keywords
-  "Returns table privileges as vector of keywords."
-  [privileges]
-  (vec (map keyword privileges)))
-
 (defn select-all?
   [columns]
   (and (= 1 (count columns))
-       (= 'all (first columns))
-       ))
+       (= ":all" (str (first columns)))))
 
-(defn get-sql-statement
+(defn sql-statement
   [table-name columns]
   (if (select-all? columns)
     (format "SELECT * FROM %s " table-name)
@@ -78,6 +29,14 @@
   [table-definition]
   (= (second table-definition) '->))
 
+(defn group-privileges-var-name
+  [^clojure.lang.Symbol group-name]
+  (symbol (str (str group-name)
+               "-"
+               "group"
+               "-"
+               "privileges")))
+
 (defmacro group [name & body]
   ;; Sample
   ;; (group Agent
@@ -89,17 +48,22 @@
   ;;    (select-agent-proposal) ;; select person, phone, address, price from proposal;
   ;;    (select-agent-agents)  ;; select clients_id, proposal_id, agent from agents;
   (let [group-name name
-        group-name-sym (symbol group-name)]
-    (register-group! group-name-sym)
-    (doseq [table (partition 3 body)]
-      (when (arrow-separator? table)
-        (let [[table-name _ allowed-columns] table
-              table-name-sym (symbol table-name)]
-          (register-table-privileges! group-name-sym
-                                      table-name-sym
-                                      allowed-columns)
-          (intern (symbol (ns-name *ns*))
-                  (allowed-column-fn-name group-name
-                                          table-name)
-                  (fn [] (get-sql-statement table-name
-                                            allowed-columns))))))))
+        privileges-var-name (group-privileges-var-name group-name)
+        privileges (into {}
+                         (for [table (partition 3 body)]
+                           (when (arrow-separator? table)
+                             (let [[table-name _ allowed-columns] table]
+                               [(str table-name)
+                                (vec (map str allowed-columns))]))))
+        group-def `(def ~privileges-var-name ~privileges)
+        fn-defs (map
+                 (fn [[table-name columns]]
+                   (let [table-name-sym (symbol table-name)
+                         fn-name (select-fn-name group-name
+                                                 table-name-sym)
+                         select-stmt (sql-statement table-name-sym
+                                                    (map symbol columns))]
+                     `(defn ~fn-name [] ~select-stmt)))
+                 privileges)
+        ]
+    `(list ~group-def ~@fn-defs)))
