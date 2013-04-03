@@ -1,6 +1,7 @@
 (ns clojure-course-task03.dsl.group-test
   (:require [clojure.test :as test])
-  (:require [clojure-course-task03.dsl.group :as target]))
+  (:require [clojure-course-task03.dsl.group :as target])
+  (:use clojure-course-task03.dsl.select))
 
 (test/deftest group-macro-defines-fn-seq-to-extract-table-privileges
   (test/testing "Group macro defines sequence of functions get sql statements."

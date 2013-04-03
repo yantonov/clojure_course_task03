@@ -1,5 +1,6 @@
 (ns clojure-course-task03.dsl.group
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s])
+  (:use clojure-course-task03.dsl.select))
 
 (defn allowed-column-fn-name
   "defines function name to access allowed columns for given group/table"
@@ -59,24 +60,13 @@
   [privileges]
   (vec (map keyword privileges)))
 
-(defn select-all?
-  [columns]
-  (and (= 1 (count columns))
-       (= ':all (first columns))
-       ))
-
-(defn get-sql-statement
-  [table-name columns]
-  (if (select-all? columns)
-    (format "SELECT * FROM %s " table-name)
-    (format "SELECT %s FROM %s "
-            (clojure.string/join ","
-                                 (map str columns))
-            table-name)))
-
 (defn arrow-separator?
   [table-definition]
   (= (second table-definition) '->))
+
+(defmacro anaph [sym value & body]
+  `(let [~sym ~value]
+     ~@body))
 
 (defmacro group [name & body]
   ;; Sample
@@ -94,12 +84,18 @@
     (doseq [table (partition 3 body)]
       (when (arrow-separator? table)
         (let [[table-name _ allowed-columns] table
-              table-name-sym (symbol table-name)]
+              table-name-sym (symbol table-name)
+              table-var (symbol (str table-name "-fields-var"))
+              clmns (vec (map keyword allowed-columns))]
           (register-table-privileges! group-name-sym
                                       table-name-sym
                                       allowed-columns)
           (intern (symbol (ns-name *ns*))
                   (allowed-column-fn-name group-name
                                           table-name)
-                  (fn [] (get-sql-statement table-name
-                                            allowed-columns))))))))
+                  (fn []
+                    (eval `(do
+                             (use 'clojure-course-task03.dsl.select)
+                             (anaph ~table-var ~clmns
+                                    (select ~table-name-sym
+                                            (~'fields ~':all))))))))))))
