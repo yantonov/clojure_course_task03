@@ -1,5 +1,6 @@
 (ns clojure-course-task03.dsl.group
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s])
+  (:use clojure-course-task03.dsl.select))
 
 (defn select-fn-name
   "defines function name to access allowed columns for given group/table"
@@ -10,20 +11,6 @@
                (s/lower-case (str group))
                "-"
                (s/lower-case (str table)))))
-
-(defn select-all?
-  [columns]
-  (and (= 1 (count columns))
-       (= ":all" (str (first columns)))))
-
-(defn sql-statement
-  [table-name columns]
-  (if (select-all? columns)
-    (format "SELECT * FROM %s " table-name)
-    (format "SELECT %s FROM %s "
-            (clojure.string/join ","
-                                 (map str columns))
-            table-name)))
 
 (defn arrow-separator?
   [table-definition]
@@ -36,6 +23,10 @@
                "group"
                "-"
                "privileges")))
+
+(defn is-all? [columns]
+  (and (= 1 (count columns))
+       (= ":all" (first columns))))
 
 (defmacro group [name & body]
   ;; Sample
@@ -61,9 +52,14 @@
                    (let [table-name-sym (symbol table-name)
                          fn-name (select-fn-name group-name
                                                  table-name-sym)
-                         select-stmt (sql-statement table-name-sym
-                                                    (map symbol columns))]
-                     `(defn ~fn-name [] ~select-stmt)))
+                         allowed (if (is-all? columns)
+                                   [:all]
+                                   (map keyword columns))
+                         fields-var (symbol (str table-name "-fields-var"))]
+                     `(defn ~fn-name []
+                        (let [~fields-var [~@allowed]]
+                          (select ~table-name-sym
+                                  (~'fields ~':all))))))
                  privileges)
         ]
     `(list ~group-def ~@fn-defs)))

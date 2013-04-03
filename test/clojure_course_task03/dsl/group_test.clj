@@ -1,6 +1,7 @@
 (ns clojure-course-task03.dsl.group-test
   (:require [clojure.test :as test])
-  (:require [clojure-course-task03.dsl.group :as target]))
+  (:require [clojure-course-task03.dsl.group :as target])
+  (:use clojure-course-task03.dsl.select))
 
 (test/deftest select-fn-name-test
   (test/testing "name convention for select function name"
@@ -71,5 +72,4 @@
     (let [f (ns-resolve 'clojure-course-task03.dsl.group-test
                         'select-agent4-proposal)]
       (test/testing "select-agent4-agents returns table privileges."
-        (test/is (= "SELECT * FROM proposal " (f))))
-      )))
+        (test/is (= "SELECT * FROM proposal " (f)))))))

@@ -2,7 +2,8 @@
   (:require [clojure.test :as test])
   (:require [clojure-course-task03.dsl
              [group :as g]
-             [user :as target]]))
+             [user :as target]])
+  (:use clojure-course-task03.dsl.select))
 
 (test/deftest var-name-which-holds-table-privileges-test
   (test/testing "Name convention for variable names"

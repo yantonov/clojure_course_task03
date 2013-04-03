@@ -3,7 +3,8 @@
              [group :as g]
              [user :as u]
              [with-user :as target]])
-  (:require [clojure.test :as test]))
+  (:require [clojure.test :as test])
+  (:use clojure-course-task03.dsl.select))
 
 (def test-atom (atom []))
 
