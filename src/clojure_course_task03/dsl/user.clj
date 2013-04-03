@@ -16,11 +16,9 @@
 (defn table-privileges-var-name
   [^clojure.lang.Symbol user-name
    ^clojure.lang.Symbol table-name]
-  (symbol (str user-name
-               "-"
-               table-name
-               "-"
-               "fields-var")))
+  (symbol (format "%s-%s-fields-var"
+                  user-name
+                  table-name)))
 
 (defn only-belongs-to-command [security-data-item]
   (let [[cmd] security-data-item]
