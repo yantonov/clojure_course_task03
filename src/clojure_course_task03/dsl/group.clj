@@ -6,11 +6,9 @@
   "defines function name to access allowed columns for given group/table"
   [^clojure.lang.Symbol group
    ^clojure.lang.Symbol table]
-  (symbol (str "select"
-               "-"
-               (s/lower-case (str group))
-               "-"
-               (s/lower-case (str table)))))
+  (symbol (format "select-%s-%s"
+                  (s/lower-case (str group))
+                  (s/lower-case (str table)))))
 
 (defn arrow-separator?
   [table-definition]
