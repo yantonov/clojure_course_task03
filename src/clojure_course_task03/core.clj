@@ -3,39 +3,37 @@
   (:require [clojure-course-task03.dsl
              [group :as group]
              [user :as user]
-             [with-user :as with-user]])
-  (:use clojure-course-task03.dsl.select))
+             [with-user :as with-user]]))
 
 ;; Examples:
 ;; -------------------------------------
 
-(let [proposal-fields-var [:person, :phone, :address, :price]]
-  (select proposal
-          (fields :person, :phone, :id)
-          (where {:price 11})
-          (join agents (= agents.proposal_id proposal.id))
-          (order :f3)
-          (limit 5)
-          (offset 5)))
+;; (let [proposal-fields-var [:person, :phone, :address, :price]]
+;;   (select proposal
+;;           (fields :person, :phone, :id)
+;;           (where {:price 11})
+;;           (join agents (= agents.proposal_id proposal.id))
+;;           (order :f3)
+;;           (limit 5)
+;;           (offset 5)))
 
-(let [proposal-fields-var [:person, :phone, :address, :price]]
-  (select proposal
-          (fields :all)
-          (where {:price 11})
-          (join agents (= agents.proposal_id proposal.id))
-          (order :f3)
-          (limit 5)
-          (offset 5)))
+;; (let [proposal-fields-var [:person, :phone, :address, :price]]
+;;   (select proposal
+;;           (fields :all)
+;;           (where {:price 11})
+;;           (join agents (= agents.proposal_id proposal.id))
+;;           (order :f3)
+;;           (limit 5)
+;;           (offset 5)))
 
-(let [proposal-fields-var [:all]]
-  (select proposal
-          (fields :all)
-          (where {:price 11})
-          (join agents (= agents.proposal_id proposal.id))
-          (order :f3)
-          (limit 5)
-          (offset 5)))
-
+;; (let [proposal-fields-var [:all]]
+;;   (select proposal
+;;           (fields :all)
+;;           (where {:price 11})
+;;           (join agents (= agents.proposal_id proposal.id))
+;;           (order :f3)
+;;           (limit 5)
+;;           (offset 5)))
 
 (comment
   ;; Описание и примеры использования DSL

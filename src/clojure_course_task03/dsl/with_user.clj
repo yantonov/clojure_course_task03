@@ -7,6 +7,12 @@
                    variable)]
     (if (nil? v) nil @v)))
 
+(defn privileges-vars
+  [user-name]
+  (filter #(and (.startsWith (str %) (str user-name "-"))
+                (.endsWith (str %) "-fields-var"))
+          (keys (ns-publics (symbol (ns-name *ns*))))))
+
 (defmacro with-user [name & body]
   ;; Sample
   ;; (with-user Ivanov
@@ -20,8 +26,7 @@
   (let [user-name (str name)
         strip-prefix-len (inc (.length user-name))]
     (let [bindings (apply vector (apply concat
-                                     (for [v (u/get-user-tables-vars)
-                                           :when (.startsWith (str v) user-name)]
+                                     (for [v (privileges-vars user-name)]
                                        [(symbol (.substring (str v)
                                                             strip-prefix-len))
                                         (value-for-defined-var v)])))]
