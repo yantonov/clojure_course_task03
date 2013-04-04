@@ -1,22 +1,20 @@
-(ns clojure-course-task03.dsl.user-test
+(ns clojure-course-task03.user-test
   (:require [clojure.test :as test])
-  (:require [clojure-course-task03.dsl
-             [group :as g]
-             [user :as target]]))
+  (:use clojure-course-task03.core))
 
 (test/deftest var-name-which-holds-table-privileges-test
   (test/testing "Name convention for variable names"
     (test/is (= 'Ivanov-proposal-fields-var
-                (target/table-privileges-var-name 'Ivanov 'proposal)))))
+                (table-privileges-var-name 'Ivanov 'proposal)))))
 
 (test/deftest user-macro-defines-variables-contained-table-privileges
   (test/testing "User macro defines variables contained table privileges."
     (let [ns-sym (symbol (ns-name *ns*))]
-      (eval '(clojure-course-task03.dsl.group/group
+      (eval '(clojure-course-task03.core/group
               Agent
               proposal -> [person, phone, address, price]
               agents -> [client_id, proposal_id, agent]))
-      (eval '(clojure-course-task03.dsl.user/user
+      (eval '(clojure-course-task03.core/user
               Ivanov
               (belongs-to Agent)))
       (test/is (false? (nil? (ns-resolve ns-sym
@@ -27,11 +25,11 @@
 (test/deftest variables-defined-by-user-macro-contains-table-privileges
   (test/testing "Variables defined by user macro contains table privileges."
     (let [ns-sym (symbol (ns-name *ns*))]
-      (eval '(clojure-course-task03.dsl.group/group
+      (eval '(clojure-course-task03.core/group
               Agent
               proposal -> [person, phone, address, price]
               agents -> [client_id, proposal_id, agent]))
-      (eval '(clojure-course-task03.dsl.user/user
+      (eval '(clojure-course-task03.core/user
               Ivanov
               (belongs-to Agent)))
       (test/is (= [:person, :phone, :address, :price]
@@ -41,30 +39,30 @@
 
 
 (test/deftest user-macro-updates-user-tables-var-collection
-  (eval '(clojure-course-task03.dsl.group/group
+  (eval '(clojure-course-task03.core/group
           Agent
           proposal -> [person, phone, address, price]
           agents -> [client_id, proposal_id, agent]))
-  (eval '(clojure-course-task03.dsl.user/user
+  (eval '(clojure-course-task03.core/user
           Ivanov
           (belongs-to Agent)))
-  (let [vars (target/get-user-tables-vars)]
+  (let [vars (get-user-tables-vars)]
     (test/is (contains? vars 'Ivanov-agents-fields-var))
     (test/is (contains? vars 'Ivanov-proposal-fields-var))))
 
 (test/deftest attach-to-multiple-groups
   (test/testing "user macro can be used to attach user to multiple groups"
     (let [ns-sym (symbol (ns-name *ns*))]
-      (eval '(clojure-course-task03.dsl.group/group
+      (eval '(clojure-course-task03.core/group
               A
               a_table -> [a_column]))
-      (eval '(clojure-course-task03.dsl.group/group
+      (eval '(clojure-course-task03.core/group
               B
               b_table -> [b_column]))
-      (eval '(clojure-course-task03.dsl.group/group
+      (eval '(clojure-course-task03.core/group
               C
               c_table -> [c_column]))
-      (eval '(clojure-course-task03.dsl.user/user
+      (eval '(clojure-course-task03.core/user
               Ivanov
               (belongs-to A B C)))
       (test/is (false? (nil? (ns-resolve ns-sym
@@ -77,13 +75,13 @@
 (test/deftest multiple-belongs-to-statements
   (test/testing "user macro can be used to attach user to multiple groups"
     (let [ns-sym (symbol (ns-name *ns*))]
-      (eval '(clojure-course-task03.dsl.group/group
+      (eval '(clojure-course-task03.core/group
               D
               d_table -> [d_column]))
-      (eval '(clojure-course-task03.dsl.group/group
+      (eval '(clojure-course-task03.core/group
               E
               e_table -> [e_column]))
-      (eval '(clojure-course-task03.dsl.user/user
+      (eval '(clojure-course-task03.core/user
               Ivanov3
               (belongs-to D)
               (belongs-to E)))
@@ -95,13 +93,13 @@
 (test/deftest union-group-privileges-for-same-table
   (test/testing "user macro can be used to attach user to multiple groups"
     (let [ns-sym (symbol (ns-name *ns*))]
-      (eval '(clojure-course-task03.dsl.group/group
+      (eval '(clojure-course-task03.core/group
               F
               f_table -> [f1_column]))
-      (eval '(clojure-course-task03.dsl.group/group
+      (eval '(clojure-course-task03.core/group
               G
               f_table -> [f2_column]))
-      (eval '(clojure-course-task03.dsl.user/user
+      (eval '(clojure-course-task03.core/user
               Ivanov4
               (belongs-to F G)))
       (test/is (false? (nil? (ns-resolve ns-sym

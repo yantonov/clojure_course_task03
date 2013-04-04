@@ -1,7 +1,6 @@
 (ns clojure-course-task03.core-test
   (:use clojure.test
-        clojure-course-task03.core
-        clojure-course-task03.dsl.select))
+        clojure-course-task03.core))
 
 (group Agent
        proposal -> [person, phone, address, price]
