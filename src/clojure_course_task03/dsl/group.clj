@@ -16,11 +16,7 @@
 
 (defn group-privileges-var-name
   [^clojure.lang.Symbol group-name]
-  (symbol (str (str group-name)
-               "-"
-               "group"
-               "-"
-               "privileges")))
+  (symbol (format "%s-group-privileges" (str group-name))))
 
 (defn is-all? [columns]
   (and (= 1 (count columns))
