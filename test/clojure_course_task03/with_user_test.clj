@@ -1,28 +1,24 @@
-(ns clojure-course-task03.dsl.with-user-test
-  (:require [clojure-course-task03.dsl
-             [group :as g]
-             [user :as u]
-             [with-user :as target]])
+(ns clojure-course-task03.with-user-test
   (:require [clojure.test :as test])
-  (:use clojure-course-task03.dsl.select))
+  (:use clojure-course-task03.core))
 
 (def test-atom (atom []))
 
-(g/group
+(group
  Agent
  proposal -> [person, phone, address, price]
  agents -> [client_id, proposal_id, agent])
 
-(u/user
+(user
  Ivanov
  (belongs-to Agent)
- (reset! clojure-course-task03.dsl.with-user-test/test-atom []))
+ (reset! clojure-course-task03.with-user-test/test-atom []))
 
-(target/with-user
+(with-user
   Ivanov
-  (swap! clojure-course-task03.dsl.with-user-test/test-atom
+  (swap! clojure-course-task03.with-user-test/test-atom
          (fn [a] (conj a proposal-fields-var)))
-  (swap! clojure-course-task03.dsl.with-user-test/test-atom
+  (swap! clojure-course-task03.with-user-test/test-atom
          (fn [a] (conj a agents-fields-var))))
 
 (test/deftest with-user-test
